@@ -1,0 +1,32 @@
+# Dependencies & build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local mode data (database + uploaded audio)
+.local-data/
+
+# Environment files with real values — NEVER commit
+.env
+.env.local
+.env.*.local
+.env.production
+supabase/.env
+supabase/functions/.env
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Editor / OS / logs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+coverage/
+
+# Claude Code local settings
+.claude/settings.local.json

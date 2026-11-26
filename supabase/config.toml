@@ -1,0 +1,7 @@
+# Minimal Supabase CLI config. Only settings this project relies on are listed.
+project_id = "sangeet-manager"
+
+[functions.api]
+# Our own session tokens are checked inside the function, so the platform JWT
+# check is disabled. Every route still enforces auth server-side (see app.ts).
+verify_jwt = false
