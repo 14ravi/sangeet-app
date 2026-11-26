@@ -8,9 +8,24 @@ import { handleRequest, type AudioStorage, type Deps } from './app.ts';
 const BUCKET = 'performance-audio';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY');
+
+// Server-only key. Prefer the new secret keys (SUPABASE_SECRET_KEYS is a JSON
+// dictionary injected by Supabase); fall back to the legacy service_role key.
+function serverKey(): string | undefined {
+  const dict = Deno.env.get('SUPABASE_SECRET_KEYS');
+  if (dict) {
+    try {
+      const parsed = JSON.parse(dict) as Record<string, string>;
+      if (parsed.default) return parsed.default;
+    } catch {
+      /* fall through */
+    }
+  }
+  return Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY');
+}
+const serviceKey = serverKey();
 if (!supabaseUrl || !serviceKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be available to the function.');
+  throw new Error('SUPABASE_URL and a server secret key (SUPABASE_SECRET_KEYS or SUPABASE_SERVICE_ROLE_KEY) must be available to the function.');
 }
 
 const sb = createClient(supabaseUrl, serviceKey, {
