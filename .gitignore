@@ -30,3 +30,6 @@ coverage/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Local preview config (contains local-only test credentials)
+.claude/launch.json

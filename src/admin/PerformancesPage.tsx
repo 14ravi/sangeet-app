@@ -62,7 +62,7 @@ export function PerformancesPage() {
         <IconSearch className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-stone-400" />
         <TextInput type="search" placeholder="Search name, song or person" value={q} onChange={(e) => setQ(e.target.value)} className="pl-10" aria-label="Search performances" />
       </div>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
         {FILTERS.map((f) => (
           <button
             key={f.value}

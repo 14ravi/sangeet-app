@@ -1,12 +1,13 @@
 // LOCAL MODE / TESTS ONLY. Runs the real SQL migrations inside PGlite
 // (Postgres compiled to WebAssembly) so the app can run without Supabase.
 import { PGlite } from '@electric-sql/pglite';
-import { readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const MIGRATIONS_DIR = join(import.meta.dirname, '..', '..', 'supabase', 'migrations');
 
 export async function createLocalDb(dataDir?: string): Promise<PGlite> {
+  if (dataDir) mkdirSync(dataDir, { recursive: true });
   const db = dataDir ? new PGlite(dataDir) : new PGlite();
   await db.exec(`
     do $$ begin

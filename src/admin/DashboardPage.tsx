@@ -116,7 +116,7 @@ export function DashboardPage() {
           <p className="text-sm text-stone-500">{data.by_side.groom.performances} performances</p>
         </Card>
       </section>
-      {data.by_side.unassigned > 0 ? <p className="text-sm text-stone-500">{data.by_side.unassigned} people have no side set yet.</p> : null}
+      {data.by_side.unassigned > 0 ? <p className="text-sm text-stone-500">{data.by_side.unassigned} {data.by_side.unassigned === 1 ? "person has" : "people have"} no side set yet.</p> : null}
 
       <Link to="/admin/live" className="flex min-h-14 items-center justify-between rounded-2xl bg-stone-900 px-4 text-white active:bg-stone-800">
         <span className="font-semibold">Running order / Live</span>

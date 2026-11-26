@@ -69,7 +69,7 @@ export function SongsPage() {
             lastLetter = letter;
             return (
               <li key={s.key}>
-                {header ? <div className="sticky top-14 bg-stone-100 px-4 py-1 text-xs font-bold text-stone-500">{letter}</div> : null}
+                {header ? <div className="bg-stone-100 px-4 py-1 text-xs font-bold text-stone-500">{letter}</div> : null}
                 <Link to={`/admin/songs/${encodeURIComponent(s.key)}`} className="flex min-h-14 items-center gap-3 border-t border-stone-100 px-4 py-2 active:bg-stone-50">
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold break-words">{s.title}</span>

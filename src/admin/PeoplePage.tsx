@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { api, errorMessage } from '../lib/api';
 import { useApi, useDocumentTitle } from '../lib/hooks';
 import { formatDate, fullName } from '../lib/format';
@@ -66,7 +66,7 @@ export function PeoplePage() {
         <IconSearch className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-stone-400" />
         <TextInput type="search" placeholder="Search name or phone" value={q} onChange={(e) => setQ(e.target.value)} className="pl-10" aria-label="Search people" />
       </div>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
         {FILTERS.map((f) => (
           <button
             key={f.value}
@@ -151,7 +151,7 @@ function PendingLinks({ items, onDone }: { items: PendingAccount[]; onDone: () =
   }
 
   return (
-    <Card className="border-amber-300 bg-amber-50">
+    <Card className="!border-amber-300 !bg-amber-50">
       <h2 className="text-lg font-bold text-amber-900">Needs your confirmation</h2>
       <p className="mb-3 text-sm text-amber-900">
         These people registered with a phone number you had already entered. Phone numbers are not verified, so please confirm
@@ -176,7 +176,6 @@ function PendingLinks({ items, onDone }: { items: PendingAccount[]; onDone: () =
               <Button size="sm" variant="secondary" busy={busy === a.id + 'new'} onClick={() => link(a.id, null)}>
                 Different person — add as new
               </Button>
-              <Link to="/admin/people" className="hidden" />
             </div>
           </li>
         ))}
