@@ -294,29 +294,50 @@ describe('duration threshold', () => {
 });
 
 describe('progress tracker & WhatsApp names (privacy)', () => {
-  it('counts and lists only FINALISED dances (with audio); no songs, notes, links or order', async () => {
-    const reg = await app.register({ first_name: 'Zoya', last_name: 'Khan', phone: '9888899900' });
+  it('shows only the viewer’s own side, finalised dances only; no songs, notes, links or order', async () => {
+    const zoya = await app.register({ first_name: 'Zoya', last_name: 'Khan', phone: '9888899900' });
+    const ravi = await app.register({ first_name: 'Ravi', last_name: 'Groom', phone: '9888899911' });
     const a = await person('Priya', 'bride');
-    const b = await person('Draftonly', 'groom');
+    const b = await person('Draftonly', 'bride');
+    const g = await person('Rahul', 'groom');
     const one = await perf({ display_name: 'Bride Squad', side: 'bride', song_title: 'Secret Song Title', youtube_url: 'https://youtu.be/zzz', admin_notes: 'private note', participant_ids: [a] });
     const two = await perf({ display_name: 'Again', side: 'bride', song_title: 'Another Hidden Song', participant_ids: [a] });
-    await perf({ display_name: 'Unfinished Dance', performance_type: 'solo', participant_ids: [b] }); // no audio
-    await app.uploadAudio(admin, one.id);
-    await app.uploadAudio(admin, two.id);
+    await perf({ display_name: 'Unfinished Dance', side: 'bride', performance_type: 'solo', participant_ids: [b] }); // no audio
+    const groomDance = await perf({ display_name: 'Groom Bhangra', side: 'groom', participant_ids: [g] });
+    for (const p of [one, two, groomDance]) await app.uploadAudio(admin, p.id);
 
-    const t = await app.call('participant/tracker', {}, reg.data.token);
-    expect(t.status).toBe(200);
-    expect(Object.keys(t.data).sort()).toEqual(['by_side', 'dances', 'included', 'names', 'not_included', 'total']);
-    expect(t.data.total).toBe(3);
+    // side not set yet -> nothing shown
+    const none = await app.call('participant/tracker', {}, zoya.data.token);
+    expect(none.status).toBe(200);
+    expect(none.data.viewer_side).toBeNull();
+    expect(none.data.dances).toEqual([]);
+    expect(none.data.names).toEqual([]);
+
+    // admin assigns sides
+    const list = (await app.call('admin/participants/list', {}, admin)).data.participants as { id: string; first_name: string; last_name: string }[];
+    for (const [first, side] of [['Zoya', 'bride'], ['Ravi', 'groom']] as const) {
+      const p = list.find((x) => x.first_name === first)!;
+      await app.call('admin/participants/save', { id: p.id, first_name: p.first_name, last_name: p.last_name, side }, admin);
+    }
+
+    const t = await app.call('participant/tracker', {}, zoya.data.token);
+    expect(Object.keys(t.data).sort()).toEqual(['dances', 'included', 'names', 'not_included', 'total', 'viewer_side']);
+    expect(t.data.viewer_side).toBe('bride');
+    expect(t.data.total).toBe(3); // Zoya, Priya, Draftonly (bride side only)
     expect(t.data.included).toBe(1); // Draftonly's dance has no audio yet
-    expect(t.data.not_included).toBe(2);
-    expect(t.data.names).toEqual(['Priya Sharma']); // listed once even though in 2 performances
+    expect(t.data.names).toEqual(['Priya Sharma']); // once, even though in 2 performances
     expect(t.data.dances).toEqual([
       { side: 'bride', display_name: 'Again', performance_type: 'group', names: ['Priya Sharma'] },
       { side: 'bride', display_name: 'Bride Squad', performance_type: 'group', names: ['Priya Sharma'] },
     ]);
     const text = JSON.stringify(t.data);
-    expect(text).not.toMatch(/Secret Song|Hidden Song|youtu|private note|Unfinished|Draftonly|position|sort_order|audio/i);
+    expect(text).not.toMatch(/Secret Song|Hidden Song|youtu|private note|Unfinished|Draftonly Sharma\b.*dances|Groom Bhangra|Rahul|position|sort_order|audio/i);
+
+    const tg = await app.call('participant/tracker', {}, ravi.data.token);
+    expect(tg.data.viewer_side).toBe('groom');
+    expect(tg.data.dances.map((d: { display_name: string }) => d.display_name)).toEqual(['Groom Bhangra']);
+    expect(tg.data.names).toEqual(['Rahul Sharma']);
+    expect(JSON.stringify(tg.data)).not.toMatch(/Bride Squad|Priya|Again/);
   });
 
   it('WhatsApp dance list includes only dances with audio, and no song/notes/links/order', async () => {

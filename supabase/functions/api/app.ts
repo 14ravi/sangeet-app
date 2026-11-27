@@ -328,14 +328,15 @@ route('participant/change-pin', 'participant-restricted', async (ctx) => {
 // Participant features (full, unrestricted, non-blocked sessions only)
 // ---------------------------------------------------------------------------
 route('participant/tracker', 'participant', async (ctx) => {
-  const r = await ctx.deps.rpc('tracker_stats');
+  // Only the viewer's own side (from their linked participant record).
+  const r = await ctx.deps.rpc('tracker_stats', { account_id: ctx.session!.account_id });
   // Explicit allow-list: counts, names and FINALISED dances (side, dance
   // name, Solo/Group, performers) only — never songs, audio, order or notes.
   return {
+    viewer_side: r.viewer_side ?? null,
     total: r.total,
     included: r.included,
     not_included: r.not_included,
-    by_side: r.by_side,
     names: r.names,
     dances: ((r.dances ?? []) as Record<string, unknown>[]).map((d) => ({
       side: d.side,
