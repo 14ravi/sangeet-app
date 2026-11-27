@@ -1,9 +1,10 @@
-// "Share Progress on WhatsApp": builds the message from the LATEST database
-// state (names only) and opens WhatsApp, the system share sheet, or copies it.
+// "Share Progress on WhatsApp": builds the Dance List message from the LATEST
+// database state (finalised dances only: name, Solo/Group, performers) and
+// opens WhatsApp, the system share sheet, or copies it.
 import { useState } from 'react';
 import { api, errorMessage } from '../lib/api';
 import { appBaseUrl, copyText } from '../lib/format';
-import { buildProgressMessage, whatsappShareUrl } from '@shared/whatsapp.ts';
+import { buildDanceListMessage, whatsappShareUrl, type ShareDance } from '@shared/whatsapp.ts';
 import { Button, ErrorBox, useToast } from '../components/ui';
 import { IconCopy, IconShare, IconX } from '../components/icons';
 
@@ -17,8 +18,8 @@ export function SharePanel({ publicAppUrl }: { publicAppUrl?: string | null }) {
     setBusy(true);
     setError(null);
     try {
-      const r = await api<{ event_name: string; names: string[] }>('admin/progress-names');
-      setMessage(buildProgressMessage({ eventName: r.event_name, names: r.names, appUrl: appBaseUrl(publicAppUrl) }));
+      const r = await api<{ event_name: string; dances: ShareDance[] }>('admin/whatsapp-dances');
+      setMessage(buildDanceListMessage({ eventName: r.event_name, dances: r.dances, appUrl: appBaseUrl(publicAppUrl) }));
     } catch (e) {
       setError(e);
     } finally {
@@ -41,7 +42,7 @@ export function SharePanel({ publicAppUrl }: { publicAppUrl?: string | null }) {
       {message ? (
         <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
           <div className="mb-2 flex items-center justify-between">
-            <p className="font-semibold text-emerald-900">Message preview (names only)</p>
+            <p className="font-semibold text-emerald-900">Message preview (finalised dances only)</p>
             <button type="button" aria-label="Close preview" onClick={() => setMessage(null)} className="flex h-11 w-11 items-center justify-center rounded-full">
               <IconX />
             </button>

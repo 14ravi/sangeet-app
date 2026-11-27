@@ -14,7 +14,7 @@ Short version of the [README](README.md) (section numbers in brackets). Commands
   npx supabase link --project-ref YOUR-PROJECT-REF
   ```
   ```powershell
-  npx supabase db push
+  npx supabase db push --remote
   ```
 - [ ] Storage → `performance-audio` exists and is **Private**, 50 MB, audio MIME types; **no** storage policies (§4)
 - [ ] Edge Function deployed (§5)
@@ -43,7 +43,7 @@ Short version of the [README](README.md) (section numbers in brackets). Commands
 - [ ] Participant: **My dances** shows the performance; Download works
 - [ ] Admin: Reset PIN → log in as the person with 0000 → forced to choose a new PIN
 - [ ] Live mode on two phones: mark Done on one, the other updates within ~5 s
-- [ ] Share Progress on WhatsApp → message has names only
+- [ ] Share Progress on WhatsApp → Dance List shows only dances with uploaded music, grouped Groom / Bride
 - [ ] Delete the test data (performance, then archive/delete the person)
 
 ## Before the event
@@ -59,7 +59,7 @@ Short version of the [README](README.md) (section numbers in brackets). Commands
 |---|---|
 | Website (`src/`, `public/`) | `git push` |
 | Server (`supabase/functions/`) | `npx supabase functions deploy api --no-verify-jwt --use-api` |
-| Database (new migration file) | `npx supabase db push` |
+| Database (new migration file) | `npx supabase db push --remote` |
 
 Run `npm run check` before pushing.
 

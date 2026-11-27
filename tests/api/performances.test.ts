@@ -306,4 +306,18 @@ describe('progress tracker & WhatsApp names (privacy)', () => {
     const names = await app.call('admin/progress-names', {}, admin);
     expect(names.data.names).toEqual(['Priya Sharma']);
   });
+
+  it('WhatsApp dance list includes only dances with audio, and no song/notes/links/order', async () => {
+    const a = await person('Priya', 'bride');
+    const b = await person('Rahul', 'groom');
+    const ready = await perf({ display_name: 'Bride Squad', side: 'bride', song_title: 'Secret Song', youtube_url: 'https://youtu.be/zzz', admin_notes: 'private note', participant_ids: [a] });
+    await perf({ display_name: 'Not Finalised', side: 'groom', performance_type: 'solo', participant_ids: [b] });
+    await app.uploadAudio(admin, ready.id);
+
+    const r = await app.call('admin/whatsapp-dances', {}, admin);
+    expect(r.status).toBe(200);
+    expect(r.data.dances).toEqual([{ side: 'bride', display_name: 'Bride Squad', performance_type: 'group', names: ['Priya Sharma'] }]);
+    expect(JSON.stringify(r.data)).not.toMatch(/Secret Song|youtu|private note|Not Finalised|position|sort_order|audio/i);
+    expect((await app.call('admin/whatsapp-dances', {})).status).toBe(401);
+  });
 });

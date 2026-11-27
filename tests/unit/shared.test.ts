@@ -4,7 +4,7 @@ import { findDuplicateTitles, normalizeSongTitle } from '../../supabase/function
 import { buildAudioFilename, performerLabel } from '../../supabase/functions/_shared/filename.ts';
 import { formatDuration, isOverLimit, parseDuration } from '../../supabase/functions/_shared/duration.ts';
 import { contentMatchesFormat, resolveAudioFormat, sniffAudio } from '../../supabase/functions/_shared/audio.ts';
-import { buildProgressMessage, whatsappShareUrl } from '../../supabase/functions/_shared/whatsapp.ts';
+import { buildDanceListMessage, whatsappShareUrl } from '../../supabase/functions/_shared/whatsapp.ts';
 import { hashSecret, randomToken, sha256Hex, verifySecret } from '../../supabase/functions/_shared/crypto.ts';
 import { normalizeYouTubeUrl, validateName, validateNewPin } from '../../supabase/functions/_shared/validation.ts';
 
@@ -119,22 +119,36 @@ describe('audio format detection', () => {
   });
 });
 
-describe('WhatsApp message privacy', () => {
-  const msg = buildProgressMessage({
+describe('WhatsApp dance list message', () => {
+  const msg = buildDanceListMessage({
     eventName: 'Ladies Sangeet',
-    names: ['Rahul Sharma', 'Priya Verma', 'rahul  sharma', 'Amit Kumar'],
+    dances: [
+      { side: 'bride', display_name: 'Cousins Group', performance_type: 'group', names: ['Neha Sharma', 'Anjali Gupta', 'neha  sharma'] },
+      { side: 'groom', display_name: 'Rahul Solo', performance_type: 'solo', names: ['Rahul Sharma'] },
+      { side: 'groom', display_name: 'Brothers', performance_type: 'group', names: ['Amit Kumar', 'Vikram Singh'] },
+    ],
     appUrl: 'https://sangeet.pages.dev/',
   });
-  it('lists unique names and both links', () => {
-    expect(msg).toContain('🎉 Ladies Sangeet – Dance Updates 💃');
-    expect(msg).toContain('1. Rahul Sharma');
-    expect(msg).toContain('3. Amit Kumar');
-    expect(msg.match(/Rahul Sharma/gi)).toHaveLength(1);
+  it('lists dances Groom first then Bride, alphabetically, with type and people', () => {
+    expect(msg).toContain('Ladies Sangeet – Dance List');
+    const groom = msg.indexOf('Groom side');
+    const bride = msg.indexOf('Bride side');
+    expect(groom).toBeGreaterThan(-1);
+    expect(bride).toBeGreaterThan(groom);
+    expect(msg).toContain('1. Brothers (Group – Amit Kumar, Vikram Singh)');
+    expect(msg).toContain('2. Rahul Solo (Solo – Rahul Sharma)');
+    expect(msg).toContain('1. Cousins Group (Group – Neha Sharma, Anjali Gupta)');
+    expect(msg.match(/Neha Sharma/gi)).toHaveLength(1);
     expect(msg).toContain('https://sangeet.pages.dev/register');
     expect(msg).toContain('https://sangeet.pages.dev/tracker');
   });
-  it('contains no song, order, audio or type details', () => {
-    expect(msg).not.toMatch(/solo|group|\.mp3|audio|youtube|song title|#\d/i);
+  it('shows a friendly line for a side with no finalised dances, and when none exist', () => {
+    const one = buildDanceListMessage({ eventName: 'X', dances: [{ side: 'groom', display_name: 'A', performance_type: 'solo', names: ['A B'] }], appUrl: 'https://x.dev' });
+    expect(one.split('Bride side')[1]).toContain('No dances finalised yet');
+    expect(buildDanceListMessage({ eventName: 'X', dances: [], appUrl: 'https://x.dev' })).toContain('No dances are finalised yet');
+  });
+  it('contains no song, audio, link or order details', () => {
+    expect(msg).not.toMatch(/\.mp3|youtube|youtu\.be|supabase|#\d|position/i);
   });
   it('builds an encoded wa.me link', () => {
     const url = whatsappShareUrl('Hi & bye 🎉\nline');

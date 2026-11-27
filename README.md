@@ -4,7 +4,7 @@ A phone-first web app for running **one** wedding Sangeet dance programme:
 
 - Family members **register** (name, phone, 4-digit PIN), follow a privacy-safe **progress tracker**, and download the music for **their own** dances.
 - The organiser (and the event manager, using the same admin login) manages **people**, **performances** and trimmed **audio clips**, checks **duplicate song titles**, arranges the **running order**, and runs the event in **Live mode** from a phone.
-- A one-tap **"Share Progress on WhatsApp"** message lists only the names of people who are dancing.
+- A one-tap **"Share Progress on WhatsApp"** message lists the **finalised** dances (those with an uploaded clip), Groom side then Bride side: dance name, Solo/Group and who is dancing — never song titles, audio, running order or notes.
 
 Stack: React + Vite + TypeScript + Tailwind CSS · Supabase (Postgres, one Edge Function, private Storage bucket) · Cloudflare Pages · GitHub. No paid services are required.
 
@@ -85,7 +85,7 @@ npx supabase link --project-ref YOUR-PROJECT-REF
 ```
 
 ```powershell
-npx supabase db push
+npx supabase db push --remote
 ```
 
 `link` asks for the database password from step 2.
@@ -274,7 +274,7 @@ The website and the server function deploy separately:
 |---|---|
 | Anything in `src/`, `public/`, `index.html` | `git push` (Cloudflare redeploys) |
 | `supabase/functions/**` | `npx supabase functions deploy api --no-verify-jwt --use-api` |
-| A new file in `supabase/migrations/` | `npx supabase db push` (or paste it into the SQL Editor) |
+| A new file in `supabase/migrations/` | `npx supabase db push --remote` (or paste it into the SQL Editor) |
 
 ## 13. Updating or fixing the app with Claude
 

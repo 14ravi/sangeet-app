@@ -453,6 +453,20 @@ route('admin/change-password', 'admin', async (ctx) => {
 // ---------------------------------------------------------------------------
 route('admin/dashboard', 'admin', (ctx) => ctx.deps.rpc('admin_dashboard'));
 route('admin/progress-names', 'admin', (ctx) => ctx.deps.rpc('admin_progress_names'));
+// WhatsApp "Dance List": finalized dances only (audio uploaded). Explicit
+// allow-list of fields so song titles, audio, order and notes never leave.
+route('admin/whatsapp-dances', 'admin', async (ctx) => {
+  const r = await ctx.deps.rpc('admin_whatsapp_dances');
+  return {
+    event_name: r.event_name,
+    dances: (r.dances as Record<string, unknown>[]).map((d) => ({
+      side: d.side,
+      display_name: d.display_name,
+      performance_type: d.performance_type,
+      names: d.names,
+    })),
+  };
+});
 route('admin/audit-log', 'admin', (ctx) => ctx.deps.rpc('admin_audit_list'));
 route('admin/settings/get', 'admin', (ctx) => ctx.deps.rpc('admin_settings_get'));
 
