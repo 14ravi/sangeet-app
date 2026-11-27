@@ -14,9 +14,11 @@ interface Props {
   knownDuration?: number | null;
   compact?: boolean;
   label?: string;
+  /** Participant listening to their own dance (server checks membership). */
+  asParticipant?: boolean;
 }
 
-export function AudioPlayer({ performanceId, knownDuration, compact, label }: Props) {
+export function AudioPlayer({ performanceId, knownDuration, compact, label, asParticipant }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -38,7 +40,7 @@ export function AudioPlayer({ performanceId, knownDuration, compact, label }: Pr
   }, [performanceId]);
 
   async function fetchUrl(): Promise<string> {
-    const r = await api<{ url: string }>('admin/audio/url', { performance_id: performanceId, purpose: 'play' });
+    const r = await api<{ url: string }>(asParticipant ? 'participant/audio-download' : 'admin/audio/url', { performance_id: performanceId, purpose: 'play' });
     fetchedAt.current = Date.now();
     return r.url;
   }

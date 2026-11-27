@@ -329,13 +329,20 @@ route('participant/change-pin', 'participant-restricted', async (ctx) => {
 // ---------------------------------------------------------------------------
 route('participant/tracker', 'participant', async (ctx) => {
   const r = await ctx.deps.rpc('tracker_stats');
-  // Explicit allow-list: never forward anything except names and counts.
+  // Explicit allow-list: counts, names and FINALISED dances (side, dance
+  // name, Solo/Group, performers) only — never songs, audio, order or notes.
   return {
     total: r.total,
     included: r.included,
     not_included: r.not_included,
     by_side: r.by_side,
     names: r.names,
+    dances: ((r.dances ?? []) as Record<string, unknown>[]).map((d) => ({
+      side: d.side,
+      display_name: d.display_name,
+      performance_type: d.performance_type,
+      names: d.names,
+    })),
   };
 });
 
@@ -354,7 +361,8 @@ route('participant/audio-download', 'participant', async (ctx) => {
     throw new HttpError(403, 'forbidden', 'You can only download audio for your own performances.');
   }
   if (info.error === 'no_audio') throw new HttpError(404, 'no_audio', 'Audio has not been uploaded yet.');
-  return signAudio(ctx, info, 'download');
+  // Same ownership check for listening in the browser and for downloading.
+  return signAudio(ctx, info, ctx.body.purpose === 'play' ? 'play' : 'download');
 });
 
 async function signAudio(ctx: Ctx, info: FilenameInput & { path: string }, purpose: 'play' | 'download') {
@@ -452,7 +460,6 @@ route('admin/change-password', 'admin', async (ctx) => {
 // Admin: dashboard, settings, audit, sharing
 // ---------------------------------------------------------------------------
 route('admin/dashboard', 'admin', (ctx) => ctx.deps.rpc('admin_dashboard'));
-route('admin/progress-names', 'admin', (ctx) => ctx.deps.rpc('admin_progress_names'));
 // WhatsApp "Dance List": finalized dances only (audio uploaded). Explicit
 // allow-list of fields so song titles, audio, order and notes never leave.
 route('admin/whatsapp-dances', 'admin', async (ctx) => {

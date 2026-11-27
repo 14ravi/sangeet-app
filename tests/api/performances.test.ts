@@ -157,6 +157,14 @@ describe('audio upload, playback and download permissions', () => {
     expect((await app.call('participant/audio-download', { performance_id: mine.id }, other.data.token)).status).toBe(403);
     expect((await app.call('participant/audio-download', { performance_id: mine.id })).status).toBe(401);
 
+    // in-browser playback uses the same ownership check, and gives a streamable (not attachment) URL
+    const play = await app.call('participant/audio-download', { performance_id: mine.id, purpose: 'play' }, reg.data.token);
+    expect(play.status).toBe(200);
+    const playRes = await app.storage.handle(new Request(play.data.url));
+    expect(playRes!.status).toBe(200);
+    expect(playRes!.headers.get('content-disposition')).toBeNull();
+    expect((await app.call('participant/audio-download', { performance_id: notMine.id, purpose: 'play' }, reg.data.token)).status).toBe(403);
+
     const my = await app.call('participant/my-performances', {}, reg.data.token);
     expect(my.data.items.map((x: { id: string }) => x.id)).toEqual([mine.id]);
     expect((await app.call('participant/my-performances', {}, other.data.token)).data.items).toEqual([]);
@@ -286,25 +294,29 @@ describe('duration threshold', () => {
 });
 
 describe('progress tracker & WhatsApp names (privacy)', () => {
-  it('shows only counts and names of included people', async () => {
+  it('counts and lists only FINALISED dances (with audio); no songs, notes, links or order', async () => {
     const reg = await app.register({ first_name: 'Zoya', last_name: 'Khan', phone: '9888899900' });
     const a = await person('Priya', 'bride');
-    await person('Unused', 'groom');
-    await perf({ display_name: 'Secret Dance', song_title: 'Secret Song Title', youtube_url: 'https://youtu.be/zzz', admin_notes: 'private note', participant_ids: [a] });
-    await perf({ display_name: 'Again', song_title: 'Another', participant_ids: [a] });
+    const b = await person('Draftonly', 'groom');
+    const one = await perf({ display_name: 'Bride Squad', side: 'bride', song_title: 'Secret Song Title', youtube_url: 'https://youtu.be/zzz', admin_notes: 'private note', participant_ids: [a] });
+    const two = await perf({ display_name: 'Again', side: 'bride', song_title: 'Another Hidden Song', participant_ids: [a] });
+    await perf({ display_name: 'Unfinished Dance', performance_type: 'solo', participant_ids: [b] }); // no audio
+    await app.uploadAudio(admin, one.id);
+    await app.uploadAudio(admin, two.id);
 
     const t = await app.call('participant/tracker', {}, reg.data.token);
     expect(t.status).toBe(200);
-    expect(Object.keys(t.data).sort()).toEqual(['by_side', 'included', 'names', 'not_included', 'total']);
+    expect(Object.keys(t.data).sort()).toEqual(['by_side', 'dances', 'included', 'names', 'not_included', 'total']);
     expect(t.data.total).toBe(3);
-    expect(t.data.included).toBe(1);
+    expect(t.data.included).toBe(1); // Draftonly's dance has no audio yet
     expect(t.data.not_included).toBe(2);
     expect(t.data.names).toEqual(['Priya Sharma']); // listed once even though in 2 performances
+    expect(t.data.dances).toEqual([
+      { side: 'bride', display_name: 'Again', performance_type: 'group', names: ['Priya Sharma'] },
+      { side: 'bride', display_name: 'Bride Squad', performance_type: 'group', names: ['Priya Sharma'] },
+    ]);
     const text = JSON.stringify(t.data);
-    expect(text).not.toMatch(/Secret|youtu|private note|solo|group|position|sort_order|\bAnother\b/i);
-
-    const names = await app.call('admin/progress-names', {}, admin);
-    expect(names.data.names).toEqual(['Priya Sharma']);
+    expect(text).not.toMatch(/Secret Song|Hidden Song|youtu|private note|Unfinished|Draftonly|position|sort_order|audio/i);
   });
 
   it('WhatsApp dance list includes only dances with audio, and no song/notes/links/order', async () => {

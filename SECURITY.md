@@ -59,7 +59,7 @@ The function never logs request bodies, PINs, passwords, tokens or signed URLs �
 
 ## Privacy note shown to users
 
-Registration and home pages state that the phone number is self-entered, not verified, used only by the organisers, and never shown to other participants. The participant tracker contains only names and counts. The WhatsApp “Dance List” (shared by the admin) contains only finalised dances: side, dance name, Solo/Group and performer names, sorted alphabetically — no song titles, audio links, running order or notes. Both are enforced by explicit allow-lists in the API and by tests.
+Registration and home pages state that the phone number is self-entered, not verified, used only by the organisers, and never shown to other participants. The participant tracker and the WhatsApp “Dance List” are based only on finalised dances (music uploaded) and contain only counts, names and, per finalised dance, side, dance name, Solo/Group and performer names, sorted alphabetically — no song titles, audio links, running order or notes. Both are enforced by explicit allow-lists in the API and by tests.
 
 ## Reporting / responding
 

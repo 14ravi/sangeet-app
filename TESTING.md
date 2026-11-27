@@ -44,7 +44,7 @@ On 2026-11-26 (Windows 11, Node 24.19): **4 test files, 80 tests, all passing**;
 | Reordering, persistence after refresh | performances › *reorders, renumbers and persists* |
 | Concurrent edits: stale reorder / status rejected, idempotent same status | performances › *rejects a stale reorder…*, *marks Completed / Skipped / Pending…* |
 | Cheap polling ("unchanged") | performances › *cheap polling…* |
-| Tracker privacy (only counts + names, deduped) | performances › progress tracker & WhatsApp names |
+| Tracker privacy: finalised dances only (with audio), counts + names + dance list, no songs/notes/links/order | performances › *counts and lists only FINALISED dances…* |
 | WhatsApp Dance List: finalised dances only, Groom then Bride, no song/audio/order/notes, URL encoding | unit › WhatsApp dance list message; performances › *WhatsApp dance list includes only dances with audio…* |
 | Phone normalization (+91, 0, 91, spaces, other countries) | unit › phone normalization |
 

@@ -1,6 +1,5 @@
 import { useApi, useDocumentTitle } from '../lib/hooks';
-import { formatDuration } from '@shared/duration.ts';
-import { DownloadAudioButton } from '../components/AudioPlayer';
+import { AudioPlayer, DownloadAudioButton } from '../components/AudioPlayer';
 import { Card, EmptyState, ErrorBox, Loading, Notice, SideBadge } from '../components/ui';
 
 interface MyPerf {
@@ -45,14 +44,16 @@ export function MyPerformancesPage() {
                 {p.participants && p.participants.length > 1 ? (
                   <p className="mt-2 text-sm text-stone-500">With: {p.participants.join(', ')}</p>
                 ) : null}
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className="text-sm text-stone-500 tabular-nums">{p.duration_seconds ? formatDuration(p.duration_seconds) : ''}</span>
-                  {p.has_audio ? (
-                    <DownloadAudioButton performanceId={p.id} asParticipant />
-                  ) : (
-                    <span className="text-sm text-stone-500">Music not uploaded yet</span>
-                  )}
-                </div>
+                {p.has_audio ? (
+                  <div className="mt-3 space-y-2">
+                    <AudioPlayer performanceId={p.id} knownDuration={p.duration_seconds} label={p.display_name} asParticipant />
+                    <div className="flex justify-end">
+                      <DownloadAudioButton performanceId={p.id} asParticipant />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-stone-500">Music not uploaded yet</p>
+                )}
               </Card>
             </li>
           ))}

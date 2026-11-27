@@ -2,7 +2,7 @@
 
 A phone-first web app for running **one** wedding Sangeet dance programme:
 
-- Family members **register** (name, phone, 4-digit PIN), follow a privacy-safe **progress tracker**, and download the music for **their own** dances.
+- Family members **register** (name, phone, 4-digit PIN), follow a privacy-safe **progress tracker** (finalised dances — those with music uploaded — grouped Groom / Bride), and download the music for **their own** dances.
 - The organiser (and the event manager, using the same admin login) manages **people**, **performances** and trimmed **audio clips**, checks **duplicate song titles**, arranges the **running order**, and runs the event in **Live mode** from a phone.
 - A one-tap **"Share Progress on WhatsApp"** message lists the **finalised** dances (those with an uploaded clip), Groom side then Bride side: dance name, Solo/Group and who is dancing — never song titles, audio, running order or notes.
 
